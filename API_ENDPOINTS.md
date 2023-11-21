@@ -31,7 +31,7 @@ This document provides an overview of the API endpoints available for the Health
 
 ### Submit Symptoms
 
-- **Endpoint:** `POST /api/symptoms`
+- **Endpoint:** `POST /api/chat`
 - **Description:** Submit user's symptoms for diagnosis.
 - **Request Body:**
   - `symptoms` (string): Description of user's symptoms
