@@ -59,6 +59,8 @@ The database schema for the application is detailed in the [DATABASE_SCHEMA.md](
 - **[Abakpa Dominic]**: [GitHub Profile](https://github.com/DT-GAMER)
 - **[Ezeali Daniel]**: [GitHub Profile](https://github.com/eodaneze)
 - **[Odinaka Emmanuel]**: [GitHub Profile](https://github.com/Emmanuel-Odinaka)
+-  **[Glory Aderinwale]**: [GitHub Profile](https://github.com/GloryOyinkansola)
+-   **[Muyiwa Akinyemi]**: [GitHub Profile](https://github.com/TheUnusualD)
 
 ## License
 
