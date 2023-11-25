@@ -1,6 +1,8 @@
 from openai import OpenAI
+from decouple import config
 
 def get_openai_response(input_text):
+
   
   client = OpenAI(api_key="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")
 
