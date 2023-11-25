@@ -1,88 +1,86 @@
+import json
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_auth.views import LogoutView as RestAuthLogoutView
+from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from rest_auth.registration.views import SocialLoginView
-from django.contrib.auth import logout as django_logout
+from allauth.socialaccount.views import SocialLoginView
+from rest_framework.permissions import IsAuthenticated
+from allauth.account.views import LogoutView as AllAuthLogoutView
+from allauth.socialaccount.views import DisconnectView
 
-from .serializers import CustomUserSerializer, UserLoginSerializer
+@csrf_exempt
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
 
-# API endpoint to register a new user
-class RegisterUserView(APIView):
-    """
-    API endpoint to register a new user.
-    """
+        if password != confirm_password:
+            return JsonResponse({'message': 'Passwords do not match'}, status=400)
 
-    def post(self, request):
-        """
-        POST request to create a new user.
-        """
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'message': 'Username already exists'}, status=400)
 
-        serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'message': 'Email already exists'}, status=400)
 
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+        return JsonResponse({'message': 'User created successfully'}, status=201)
 
-# API endpoint to login a user and generate JWT tokens
-class LoginUserView(APIView):
-    """
-    API endpoint to login a user and generate JWT tokens.
-    """
+@csrf_exempt
+def login_user(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
 
-    def post(self, request):
-        """
-        POST request to login a user and generate JWT tokens.
-        """
+        user = authenticate(username=username, password=password)
 
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-            user = authenticate(request, email=email, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'message': 'Login successful'}, status=200)
+        else:
+            return JsonResponse({'message': 'Invalid credentials'}, status=401)
 
-            if user:
-                # Generate JWT tokens for authenticated user
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }, status=status.HTTP_200_OK)
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# Google login view using allauth
-class GoogleLoginView(SocialLoginView):
+class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
 
-    def get_response(self):
-        # Generate JWT tokens for authenticated user
-        refresh = self.token
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_200_OK)
+    def process_login(self):
+        get_request = self.request.GET.copy()
+        get_request['process'] = True
+        self.request.GET = get_request
 
+        self.serializer.is_valid(raise_exception=True)
+        login(self.request, self.user)
 
-# Logout view using all-auth
-class LogoutView(APIView):
-    """
-    API endpoint to log out the user.
-    """
+        
+        google_account = SocialAccount.objects.get(user_id=self.user.id, provider='google')
+        google_data = {
+            'id': google_account.uid,
+            'email': google_account.extra_data.get('email'),
+            'name': google_account.extra_data.get('name'),
+            
+        }
+        return JsonResponse({'message': 'Google login successful', 'google_data': google_data})
 
-    permission_classes = (IsAuthenticated,)
+class CustomLogoutView(AllAuthLogoutView):
+    def post(self, *args, **kwargs):
+        return super(CustomLogoutView, self).post(self.request, *args, **kwargs)
 
-    def post(self, request):
-        """
-        POST request to log out the user.
-        """
+class CustomDisconnectView(DisconnectView):
+    def post(self, *args, **kwargs):
+        return super(CustomDisconnectView, self).post(self.request, *args, **kwargs)
 
-        # Logout the user using Django all-auth
-        django_logout(request)
-
-        return Response({'success': 'User logged out successfully.'}, status=status.HTTP_200_OK)
+class CustomRestAuthLogoutView(RestAuthLogoutView):
+    def post(self, *args, **kwargs):
+        return super(CustomRestAuthLogoutView, self).post(self.request, *args, **kwargs)
 
