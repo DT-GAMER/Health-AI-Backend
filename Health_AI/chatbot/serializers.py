@@ -1,13 +1,13 @@
 from rest_framework import serializers
-from .models import UserInteraction
+from .models import ChatHistory, Feedback
 
-class UserInteractionSerializer(serializers.ModelSerializer):
-    """
-    Serializer for UserInteraction model.
-    """
-
+class ChatHistorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserInteraction
-        fields = ['id', 'user', 'timestamp', 'message', 'response']
-        read_only_fields = ['id', 'user', 'timestamp', 'response']
+        model = ChatHistory
+        fields = ['id', 'user', 'message', 'response', 'timestamp', 'session_id', 'rating']
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ['id', 'user', 'chat_history', 'feedback_text', 'timestamp']
 

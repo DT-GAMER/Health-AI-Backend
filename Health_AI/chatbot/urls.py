@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import UserInteractionView
+from . import views
+
+app_name = 'chatbot'
 
 urlpatterns = [
-    path('interaction/', UserInteractionView.as_view(), name='user-interaction'),
+    path('chatbot/interaction/', views.chatbot_interaction, name='chatbot_interaction'),
+    path('chatbot/feedback/', views.submit_feedback, name='submit_feedback'),
+    path('chatbot/rate/', views.rate_chat, name='rate_chat'),
 ]
 
