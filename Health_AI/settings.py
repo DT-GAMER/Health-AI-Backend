@@ -28,7 +28,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    
+    "authentication",
+    "chatbot",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -36,7 +38,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+
     'django_extensions',
+    'rest_auth',
+    'social_django',
 
 ]
 
@@ -48,7 +53,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "social_django.middileware.SocialAuthException.Middleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
@@ -130,7 +135,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of "allauth"
     "django.contrib.auth.backends.ModelBackend",
-    
+    'allauth.account.auth_backends.DefaultBackend',
     'allauth.socialaccount.auth_backends.AuthenticationBackend',
 
     # "allauth" specific authentication methods, such as login by e-mail
@@ -161,17 +166,18 @@ DATABASES = {
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 
-SITE_ID = 1
+SITE_ID = 2
 
 # Set the login redirect URL after successful authentication
-LOGIN_REDIRECT_URL = '/chat'
+LOGIN_REDIRECT_URL = '/chatbot/interaction'
+LOGOUT_REDIRECT_URL = '/login'
 
 # django-allauth settings
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            ID: config('CLIENT_ID'),
-            SECRET: config('CLIENT_SECRET'),
+            'CLIENT_ID': config('CLIENT_ID'),
+            'CLIENT_SECRET': config('CLIENT_SECRET'),
             'key': '',
         },
         'SCOPE': [
@@ -183,9 +189,8 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
-
 # React frontend settings
-FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend_section', 'src')
+FRONTEND_DIR = os.path.join(BASE_DIR, 'src')
 TEMPLATES[0]['DIRS'] = [FRONTEND_DIR]
 
 # Use the index.html template for all non-API, non-admin routes
