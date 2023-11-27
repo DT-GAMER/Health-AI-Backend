@@ -33,8 +33,6 @@ INSTALLED_APPS = [
     "chatbot",
     "allauth",
     "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -166,29 +164,30 @@ DATABASES = {
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 
-SITE_ID = 2
+#SITE_ID = 2
 
 # Set the login redirect URL after successful authentication
-LOGIN_REDIRECT_URL = '/chatbot/interaction'
-LOGOUT_REDIRECT_URL = '/login'
+#LOGIN_REDIRECT_URL = '/chatbot/interaction'
+#LOGOUT_REDIRECT_URL = '/login'
 
 # django-allauth settings
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'CLIENT_ID': config('CLIENT_ID'),
-            'CLIENT_SECRET': config('CLIENT_SECRET'),
-            'key': '',
-        },
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
+#SOCIALACCOUNT_PROVIDERS = {
+ #   'google': {
+       # 'APP': {
+           # 'CLIENT_ID': config('CLIENT_ID'),
+            #'CLIENT_SECRET': config('CLIENT_SECRET'),
+            #'key': '',
+    #    },
+       # 'SCOPE': [
+          #  'profile',
+           # 'email',
+       # ],
+     #   'AUTH_PARAMS': {
+        #    'access_type': 'online',
+       # }
+  #  }
+#}
+
 # React frontend settings
 FRONTEND_DIR = os.path.join(BASE_DIR, 'src')
 TEMPLATES[0]['DIRS'] = [FRONTEND_DIR]
