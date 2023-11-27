@@ -6,13 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-#from rest_auth.views import LogoutView as RestAuthLogoutView
-#from rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.views import OAuth2LoginView as SocialLoginView
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from rest_framework.permissions import IsAuthenticated
 from allauth.account.views import LogoutView as AllAuthLogoutView
-#from allauth.socialaccount.views import DisconnectView
 
 @csrf_exempt
 def signup(request):
@@ -38,8 +34,6 @@ def signup(request):
     # Handling other HTTP methods
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-from django.http import JsonResponse
-
 @csrf_exempt
 def login_user(request):
     if request.method == 'POST':
@@ -59,36 +53,6 @@ def login_user(request):
         # Handle GET requests
         return JsonResponse({'message': 'GET request not supported for login'}, status=405)
 
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
-
-    def process_login(self):
-        get_request = self.request.GET.copy()
-        get_request['process'] = True
-        self.request.GET = get_request
-
-        self.serializer.is_valid(raise_exception=True)
-        login(self.request, self.user)
-
-        
-        google_account = SocialAccount.objects.get(user_id=self.user.id, provider='google')
-        google_data = {
-            'id': google_account.uid,
-            'email': google_account.extra_data.get('email'),
-            'name': google_account.extra_data.get('name'),
-            
-        }
-        return JsonResponse({'message': 'Google login successful', 'google_data': google_data})
-
 class CustomLogoutView(AllAuthLogoutView):
     def post(self, *args, **kwargs):
         return super(CustomLogoutView, self).post(self.request, *args, **kwargs)
-
-#class CustomDisconnectView(DisconnectView):
- #   def post(self, *args, **kwargs):
-  #      return super(CustomDisconnectView, self).post(self.request, *args, **kwargs)
-
-#class CustomRestAuthLogoutView(RestAuthLogoutView):
- #   def post(self, *args, **kwargs):
-  #      return super(CustomRestAuthLogoutView, self).post(self.request, *args, **kwargs)
-
